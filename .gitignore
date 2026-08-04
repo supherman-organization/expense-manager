@@ -1,0 +1,21 @@
+# Dépendances
+node-modules/
+backend/nodes-modules/
+
+
+# Build
+dist/
+build/
+
+# Secrets & Environment
+.env
+.env.*
+! .env.example
+
+# Uploads & Logs
+uploads/
+*.log
+
+# Divers
+.DS_Store
+coverage/

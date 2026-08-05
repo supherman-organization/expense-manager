@@ -1,7 +1,6 @@
 # Dépendances
-node-modules/
-backend/nodes-modules/
-
+node_modules/
+backend/node_modules/
 
 # Build
 dist/

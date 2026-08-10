@@ -1,15 +1,19 @@
-import exoress from 'express';
+import express from 'express';
 import cors from 'cors';
+import path from 'path';
 import authRoutes from './routes/authRoutes';
 import userRoutes from './routes/userRoutes';
+import expenseRoutes from './routes/expenseRoutes';
 import { errorHandler } from './middlewares/error';
 
-const app = exoress();
+const app = express();
 
 app.use(cors());
-app.use(exoress.json());
+app.use(express.json());
 app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes); // ← ajouter cette ligne
+app.use('/api/users', userRoutes); 
+app.use('/api/expenses', expenseRoutes);
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 app.get('/health', (_req, res) => {
     res.json({ status: 'ok'})

@@ -4,7 +4,7 @@ import { AppError } from '../middlewares/error';
 
 export async function createUser(req: Request, res: Response, next: NextFunction) {
   try {
-    const { email, role } = req.body;
+    const { email, role, firstName, lastName } = req.body;
 
     const existing = await User.findOne({ email });
     if (existing) {
@@ -13,6 +13,8 @@ export async function createUser(req: Request, res: Response, next: NextFunction
 
     const user = await User.create({
       email,
+      firstName,
+      lastName,
       role,
       password: null,
       mustSetPassword: true,
@@ -21,6 +23,8 @@ export async function createUser(req: Request, res: Response, next: NextFunction
     return res.status(201).json({
       id: user._id,
       email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
       role: user.role,
     });
   } catch (error) {

@@ -14,6 +14,8 @@ export async function seedManager(): Promise<void> {
     }
     await User.create({
         email: MANAGER_EMAIL,
+        firstName: 'Marie',
+        lastName: 'KOFFI',
         password: MANAGER_PASSWORD, //Hashage automatique grâce au middleware pre('save') dans le modèle User
         role: 'manager',
         mustSetPassword: false,  // Le manager n'a pas besoin de changer son mot de passe initial

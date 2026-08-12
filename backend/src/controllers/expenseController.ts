@@ -3,16 +3,19 @@ import { Types } from 'mongoose';
 import { ExpenseNote, ExpenseStatus } from '../models/ExpenseNote';
 import { AppError } from '../middlewares/error';
 
-// --- Création d'une note (Employé, Page 3) ---
+// Création d'une note
 export async function createExpense(req: Request, res: Response, next: NextFunction) {
   try {
-    const { title, comment } = req.body;
+    const { title, comment, amount, category, expenseDate } = req.body;
     const files = (req.files as Express.Multer.File[]) || [];
     const attachments = files.map((f) => f.filename);
 
     const note = await ExpenseNote.create({
       title,
       comment,
+      amount,
+      category,
+      expenseDate,
       attachments,
       owner: req.user!.id,
     });
@@ -36,7 +39,7 @@ export async function getMyExpenses(req: Request, res: Response, next: NextFunct
 // --- Détail d'une note (propriétaire ou rôle privilégié) ---
 export async function getExpenseById(req: Request, res: Response, next: NextFunction) {
   try {
-    const note = await ExpenseNote.findById(req.params.id).populate('owner', 'email role');
+    const note = await ExpenseNote.findById(req.params.id).populate('owner', 'email role firstName lastName');
     if (!note) {
       throw new AppError(404, 'Note introuvable');
     }
@@ -68,7 +71,7 @@ export async function getAllExpenses(req: Request, res: Response, next: NextFunc
         : {};
 
     const notes = await ExpenseNote.find(filter)
-      .populate('owner', 'email role')
+      .populate('owner', 'email role firstName lastName')
       .sort({ createdAt: -1 });
 
     return res.json(notes);
@@ -80,7 +83,7 @@ export async function getAllExpenses(req: Request, res: Response, next: NextFunc
 // --- Transitions de statut (machine à états) ---
 type Transition = { from: ExpenseStatus; to: ExpenseStatus };
 
-async function changeStatus(id: string, { from, to }: Transition) {
+async function changeStatus(id: string, { from, to }: Transition, decisionComment?: string) {
   const note = await ExpenseNote.findById(id);
   if (!note) {
     throw new AppError(404, 'Note introuvable');
@@ -92,6 +95,9 @@ async function changeStatus(id: string, { from, to }: Transition) {
     );
   }
   note.status = to;
+  if(decisionComment !== undefined) {
+    note.decisionComment = decisionComment;
+  }
   await note.save();
   return note;
 }
@@ -99,7 +105,9 @@ async function changeStatus(id: string, { from, to }: Transition) {
 // Manager : valide une note créée
 export async function validateExpense(req: Request, res: Response, next: NextFunction) {
   try {
-    const note = await changeStatus(String(req.params.id), { from: 'created', to: 'validated' });
+    const note = await changeStatus(String(req.params.id), { from: 'created', to: 'validated' },
+    req.body.decisionComment,
+  );
     return res.json(note);
   } catch (error) {
     next(error);
@@ -109,7 +117,9 @@ export async function validateExpense(req: Request, res: Response, next: NextFun
 // Manager : refuse une note créée
 export async function refuseExpense(req: Request, res: Response, next: NextFunction) {
   try {
-    const note = await changeStatus(String(req.params.id), { from: 'created', to: 'refused' });
+    const note = await changeStatus(String(req.params.id), { from: 'created', to: 'refused' }, 
+    req.body.decisionComment,
+  );
     return res.json(note);
   } catch (error) {
     next(error);

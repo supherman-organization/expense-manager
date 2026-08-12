@@ -6,6 +6,8 @@ export type UserRole = 'employee' | 'manager' | 'accounting';
 export interface IUser extends Document {
     _id: Types.ObjectId;
     email: string;
+    firstName: string;
+    lastName: string;
     password: string | null;
     role: UserRole;
     mustSetPassword: boolean;
@@ -15,6 +17,8 @@ export interface IUser extends Document {
 const userSchema = new Schema<IUser> (
     {
         email: { type: String, required: true, unique: true, lowercase: true, trim: true },
+        firstName: { type: String, required: true, trim: true },
+        lastName: { type: String, required: true, trim: true },
         password: { type: String, default: null, select: false },
         role: { 
             type: String, 

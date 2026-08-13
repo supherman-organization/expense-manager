@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { User } from '../models/User';
 import { AppError } from '../middlewares/error';
+import { notifyAccountCreated } from '../utils/notifications';
 
 export async function createUser(req: Request, res: Response, next: NextFunction) {
   try {
@@ -19,6 +20,7 @@ export async function createUser(req: Request, res: Response, next: NextFunction
       password: null,
       mustSetPassword: true,
     });
+    await notifyAccountCreated(user.email, user.firstName);
 
     return res.status(201).json({
       id: user._id,

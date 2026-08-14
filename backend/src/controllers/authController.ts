@@ -27,7 +27,7 @@ export const login: RequestHandler = async (req, res, next) => {
     const token = signToken({ id: user._id.toString(), role: user.role });
     res.json({
       token,
-      user: { id: user._id, email: user.email, role: user.role },
+      user: { id: user._id, email: user.email, firstName: user.firstName, lastName: user.lastName, role: user.role },
     });
   } catch (error) {
     next(error);
@@ -53,7 +53,7 @@ export const setPassword: RequestHandler = async (req, res, next) => {
     const token = signToken({ id: user._id.toString(), role: user.role });
     res.status(200).json({
       token,
-      user: { id: user._id, email: user.email, role: user.role },
+      user: { id: user._id, email: user.email,firstName: user.firstName, lastName: user.lastName, role: user.role },
     });
   } catch (error) {
     next(error);
@@ -66,7 +66,7 @@ export const me: RequestHandler = async (req, res, next) => {
     if (!user) {
       throw new AppError(404, 'Utilisateur introuvable');
     }
-    res.json({ id: user._id, email: user.email, role: user.role });
+    res.json({ id: user._id, email: user.email,firstName: user.firstName, lastName: user.lastName, role: user.role });
   } catch (error) {
     next(error);
   }

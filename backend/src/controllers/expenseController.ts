@@ -2,17 +2,21 @@ import { Request, Response, NextFunction } from 'express';
 import { Types } from 'mongoose';
 import { ExpenseNote, ExpenseStatus } from '../models/ExpenseNote';
 import { AppError } from '../middlewares/error';
+import { notifyStatusChange } from '../utils/notifications';
 
-// --- Création d'une note (Employé, Page 3) ---
+// Création d'une note
 export async function createExpense(req: Request, res: Response, next: NextFunction) {
   try {
-    const { title, comment } = req.body;
+    const { title, comment, amount, category, expenseDate } = req.body;
     const files = (req.files as Express.Multer.File[]) || [];
     const attachments = files.map((f) => f.filename);
 
     const note = await ExpenseNote.create({
       title,
       comment,
+      amount,
+      category,
+      expenseDate,
       attachments,
       owner: req.user!.id,
     });
@@ -36,7 +40,7 @@ export async function getMyExpenses(req: Request, res: Response, next: NextFunct
 // --- Détail d'une note (propriétaire ou rôle privilégié) ---
 export async function getExpenseById(req: Request, res: Response, next: NextFunction) {
   try {
-    const note = await ExpenseNote.findById(req.params.id).populate('owner', 'email role');
+    const note = await ExpenseNote.findById(req.params.id).populate('owner', 'email role firstName lastName');
     if (!note) {
       throw new AppError(404, 'Note introuvable');
     }
@@ -68,7 +72,7 @@ export async function getAllExpenses(req: Request, res: Response, next: NextFunc
         : {};
 
     const notes = await ExpenseNote.find(filter)
-      .populate('owner', 'email role')
+      .populate('owner', 'email role firstName lastName')
       .sort({ createdAt: -1 });
 
     return res.json(notes);
@@ -80,26 +84,31 @@ export async function getAllExpenses(req: Request, res: Response, next: NextFunc
 // --- Transitions de statut (machine à états) ---
 type Transition = { from: ExpenseStatus; to: ExpenseStatus };
 
-async function changeStatus(id: string, { from, to }: Transition) {
+async function changeStatus(id: string, { from, to }: Transition, decisionComment?: string) {
   const note = await ExpenseNote.findById(id);
   if (!note) {
     throw new AppError(404, 'Note introuvable');
   }
   if (note.status !== from) {
-    throw new AppError(
-      409,
-      `Transition impossible : la note est « ${note.status} », attendu « ${from} »`,
-    );
+    throw new AppError(409, `Transition impossible : la note est « ${note.status} », attendu « ${from} »`,);
   }
   note.status = to;
+  if(decisionComment !== undefined) {
+    note.decisionComment = decisionComment;
+  }
   await note.save();
+  await note.populate('owner', 'email firstName lastName');
   return note;
 }
 
 // Manager : valide une note créée
 export async function validateExpense(req: Request, res: Response, next: NextFunction) {
   try {
-    const note = await changeStatus(String(req.params.id), { from: 'created', to: 'validated' });
+    const note = await changeStatus(String(req.params.id), { from: 'created', to: 'validated' },
+    req.body.decisionComment,
+  );
+  const owner = note.owner as unknown as { email: string; firstName: string };
+    await notifyStatusChange(owner.email, owner.firstName, note.title, note.status, note.decisionComment);
     return res.json(note);
   } catch (error) {
     next(error);
@@ -109,8 +118,12 @@ export async function validateExpense(req: Request, res: Response, next: NextFun
 // Manager : refuse une note créée
 export async function refuseExpense(req: Request, res: Response, next: NextFunction) {
   try {
-    const note = await changeStatus(String(req.params.id), { from: 'created', to: 'refused' });
-    return res.json(note);
+    const note = await changeStatus(String(req.params.id), { from: 'created', to: 'refused' }, 
+    req.body.decisionComment,
+  );
+  const owner = note.owner as unknown as { email: string; firstName: string };
+  await notifyStatusChange(owner.email, owner.firstName, note.title, note.status, note.decisionComment);
+  return res.json(note);
   } catch (error) {
     next(error);
   }
@@ -120,6 +133,8 @@ export async function refuseExpense(req: Request, res: Response, next: NextFunct
 export async function processExpense(req: Request, res: Response, next: NextFunction) {
   try {
     const note = await changeStatus(String(req.params.id), { from: 'validated', to: 'processed' });
+    const owner = note.owner as unknown as { email: string; firstName: string };
+    await notifyStatusChange(owner.email, owner.firstName, note.title, note.status);
     return res.json(note);
   } catch (error) {
     next(error);

@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from './components/ProtectedRoute';
+import Login from './pages/Login';
 
 function Placeholder({ titre }: { titre: string }) {
   return <h1 className="text-2xl font-bold text-slate-800">{titre}</h1>;
@@ -10,7 +11,7 @@ function Placeholder({ titre }: { titre: string }) {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/connexion" element={<Placeholder titre="Connexion"/>} />
+          <Route path="/connexion" element={< Login/>} />
           <Route path="/" element={
             <ProtectedRoute>
               <Placeholder titre="Mes notes de frais" />

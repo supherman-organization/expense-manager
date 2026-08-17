@@ -3,6 +3,7 @@ import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 import Login from './pages/Login';
+import MyExpenses from './pages/MyExpenses';
 
 function Placeholder({ titre }: { titre: string }) {
   return <h1 className="text-2xl font-bold text-slate-800">{titre}</h1>;
@@ -23,7 +24,7 @@ export default function App() {
               </ProtectedRoute>
             }
           >
-            <Route path="/" element={<Placeholder titre="Mes notes de frais" />} />
+            <Route path="/" element={<MyExpenses />} />
             <Route path="/nouvelle-note" element={<Placeholder titre="Nouvelle note de frais" />} />
             <Route path="/profil" element={<Placeholder titre="Mon profil" />} />
           </Route>

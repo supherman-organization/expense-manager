@@ -5,6 +5,7 @@ import Layout from './components/Layout';
 import Login from './pages/Login';
 import MyExpenses from './pages/MyExpenses';
 import NewExpense from './pages/NewExpense';
+import AllExpenses from './pages/AllExpenses';
 
 function Placeholder({ titre }: { titre: string }) {
   return <h1 className="text-2xl font-bold text-slate-800">{titre}</h1>;
@@ -38,7 +39,7 @@ export default function App() {
               </ProtectedRoute>
             }
           >
-            <Route path="/toutes-les-notes" element={<Placeholder titre="Toutes les notes" />} />
+            <Route path="/toutes-les-notes" element={<AllExpenses />} />
           </Route>
 
           {/* Manager uniquement */}

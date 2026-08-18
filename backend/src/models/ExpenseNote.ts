@@ -20,11 +20,11 @@ const expenseNoteSchema = new Schema<IExpenseNote>(
     title: { type: String, required: true, trim: true },
     comment: { type: String, default: '' },
     amount: { type: Number, required: true, min: 0 },
-    category: { 
+    category: {
       type: String,
-      enum: ['repas', 'transport', 'hébergement', 'fournitures', 'autres'],
-      default: 'other,'
-     },
+      enum: ['meal', 'transport', 'accommodation', 'supplies', 'other'],
+      default: 'other',
+    },
     expenseDate: { type: Date, required: true },
     attachments: { type: [String], default: [] },
     status: {
@@ -32,7 +32,7 @@ const expenseNoteSchema = new Schema<IExpenseNote>(
       enum: ['created', 'validated', 'refused', 'processed'],
       default: 'created',
     },
-    decisionComment: { type: String, default: "" },
+    decisionComment: { type: String, default: '' },
     owner: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   },
   { timestamps: true },

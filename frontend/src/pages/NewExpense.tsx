@@ -11,11 +11,11 @@ import Button from '../components/Button';
 import { CATEGORY_LABELS } from '../utils/labels';
 import { inputClasses } from '../utils/styles';
 
-// Clés d'enum (anglais) → on affiche les libellés FR via CATEGORY_LABELS.
+// on affiche les libellés via CATEGORY_LABELS.
 const CATEGORIES = ['meal', 'transport', 'accommodation', 'supplies', 'other'] as const;
 
 const MAX_FILES = 5;
-const MAX_SIZE = 5 * 1024 * 1024; // 5 Mo, aligné sur la limite Multer du backend
+const MAX_SIZE = 5 * 1024 * 1024; 
 const ACCEPTED = ['image/jpeg', 'image/png', 'application/pdf'];
 
 function todayIso(): string {
@@ -91,8 +91,6 @@ export default function NewExpense() {
       return;
     }
 
-    // On construit le multipart. Les valeurs partent en chaînes : le backend
-    // les recoerce (z.coerce.number() / z.coerce.date()).
     const formData = new FormData();
     formData.append('title', title.trim());
     formData.append('amount', String(amountNumber));
@@ -101,12 +99,10 @@ export default function NewExpense() {
     if (comment.trim()) {
       formData.append('comment', comment.trim());
     }
-    // Le champ doit s'appeler 'attachments' (cf. upload.array('attachments', 5)).
     files.forEach((file) => formData.append('attachments', file));
 
     setSubmitting(true);
     try {
-      // On NE fixe PAS le Content-Type : le navigateur ajoute le boundary.
       await api.post('/expenses', formData);
       navigate('/', { replace: true });
     } catch (err) {
@@ -130,7 +126,7 @@ export default function NewExpense() {
 
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          {/* Colonne gauche : informations (2/3) */}
+          {/* Colonne gauche : informations */}
           <div className="lg:col-span-2">
             <Card className="space-y-5">
               <Field label="Titre de la dépense" htmlFor="title">
@@ -199,7 +195,7 @@ export default function NewExpense() {
             </Card>
           </div>
 
-          {/* Colonne droite : pièces justificatives (1/3) */}
+          {/* Colonne droite */}
           <div>
             <Card>
               <h2 className="font-display text-base font-semibold text-primary">
@@ -209,8 +205,6 @@ export default function NewExpense() {
                 Joignez les reçus ou factures correspondants.
               </p>
 
-              {/* Le <label> englobe l'input caché : cliquer dessus ouvre le sélecteur,
-                  et on greffe le glisser-déposer sur ce même élément. */}
               <label
                 htmlFor="attachments"
                 onDragOver={(e) => {

@@ -1,12 +1,16 @@
 import { useState } from 'react';
 import type { AxiosError } from 'axios';
+import { Check, X, CircleDollarSign } from 'lucide-react';
 import api from '../services/api';
+import Button from './Button';
+import Field from './Field';
+import { inputClasses } from '../utils/styles';
 import type { ExpenseNote, UserRole } from '../types';
 
 interface Props {
   note: ExpenseNote;
   role: UserRole;
-  onDone: () => void;
+  onDone: () => void; 
 }
 
 type Action = 'validate' | 'refuse' | 'process';
@@ -16,21 +20,18 @@ export default function ExpenseActions({ note, role, onDone }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  // Dérivé du rôle et du statut 
   const canDecide = role === 'manager' && note.status === 'created';
   const canProcess = role === 'accounting' && note.status === 'validated';
 
-  // Aucune action disponible pour ce rôle sur cette note, on n'affiche rien.
   if (!canDecide && !canProcess) return null;
 
-  // Action utilisateur, gestionnaire d'événement.
   async function runAction(action: Action) {
     setError(null);
     setSubmitting(true);
     try {
       const body = action === 'process' ? {} : { decisionComment: decisionComment.trim() };
       await api.patch(`/expenses/${note._id}/${action}`, body);
-      onDone(); 
+      onDone();
     } catch (err) {
       const axiosErr = err as AxiosError<{ message?: string }>;
       setError(axiosErr.response?.data?.message ?? "L'action a échoué. Réessayez.");
@@ -46,46 +47,46 @@ export default function ExpenseActions({ note, role, onDone }: Props) {
 
       {canDecide && (
         <div className="space-y-3">
-          <div>
-            <label htmlFor="decisionComment" className="block text-sm font-medium text-slate-700">
-              Commentaire (optionnel)
-            </label>
+          <Field label="Commentaire (optionnel)" htmlFor="decisionComment">
             <textarea
               id="decisionComment"
               rows={2}
               value={decisionComment}
               onChange={(e) => setDecisionComment(e.target.value)}
               placeholder="Motif de validation ou de refus…"
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
+              className={inputClasses}
             />
-          </div>
+          </Field>
           <div className="flex gap-3">
-            <button
-              onClick={() => runAction('validate')}
+            <Button
+              variant="success"
+              icon={Check}
               disabled={submitting}
-              className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-green-500 disabled:cursor-not-allowed disabled:opacity-60"
+              onClick={() => runAction('validate')}
             >
               {submitting ? 'En cours…' : 'Valider'}
-            </button>
-            <button
-              onClick={() => runAction('refuse')}
+            </Button>
+            <Button
+              variant="danger"
+              icon={X}
               disabled={submitting}
-              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-60"
+              onClick={() => runAction('refuse')}
             >
               {submitting ? 'En cours…' : 'Refuser'}
-            </button>
+            </Button>
           </div>
         </div>
       )}
 
       {canProcess && (
-        <button
-          onClick={() => runAction('process')}
+        <Button
+          variant="secondary"
+          icon={CircleDollarSign}
           disabled={submitting}
-          className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+          onClick={() => runAction('process')}
         >
           {submitting ? 'En cours…' : 'Marquer comme traitée'}
-        </button>
+        </Button>
       )}
     </div>
   );

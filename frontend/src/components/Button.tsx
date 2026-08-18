@@ -1,6 +1,7 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
 import type { LucideIcon } from 'lucide-react';
 
+
 export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'success' | 'danger';
 
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
@@ -11,7 +12,8 @@ const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   danger: 'bg-red-600 text-white hover:bg-red-500',
 };
 
-function buttonClasses(variant: ButtonVariant = 'primary'): string {
+// eslint-disable-next-line react-refresh/only-export-components
+export function buttonClasses(variant: ButtonVariant = 'primary'): string {
   return `inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${VARIANT_CLASSES[variant]}`;
 }
 
@@ -20,6 +22,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   icon?: LucideIcon;
   children: ReactNode;
 }
+
 
 export default function Button({
   variant = 'primary',

@@ -1,41 +1,59 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "./context/AuthContext";
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import Layout from './components/Layout';
+import Login from './pages/Login';
+import MyExpenses from './pages/MyExpenses';
+import NewExpense from './pages/NewExpense';
+import AllExpenses from './pages/AllExpenses';
+import Profile from './pages/Profile';
+import CreateAccount from './pages/CreateAccount';
 
-function Placeholder({ titre }: { titre: string }) {
-  return <h1 className="text-2xl font-bold text-slate-800">{titre}</h1>;
-}
- export default function App() {
+export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/connexion" element={<Placeholder titre="Connexion"/>} />
-          <Route path="/" element={
-            <ProtectedRoute>
-              <Placeholder titre="Mes notes de frais" />
-              </ProtectedRoute>
-          } />
-          <Route path="/nouvelle-note" element={
-            <ProtectedRoute>
-              <Placeholder titre="Nouvelle note de frais" />
-            </ProtectedRoute>
-          } />
-          <Route path="/toutes-les-notes" element={
-            <ProtectedRoute roles={['manager', 'accounting']}>
-              <Placeholder titre="Toutes les notes" />
-            </ProtectedRoute >
-          } />
+          <Route path="/connexion" element={<Login />} />
+
+          {/* Espace connecté (tous rôles) — coquille commune via Layout */}
           <Route
-            path="/comptes" element={
-              <ProtectedRoute roles={['manager']}>
-                <Placeholder titre="Création de comptes" />
+            element={
+              <ProtectedRoute>
+                <Layout />
               </ProtectedRoute>
-            }/>
-            <Route path="*" element={<Navigate to="/" replace />} />
+            }
+          >
+            <Route path="/" element={<MyExpenses />} />
+            <Route path="/nouvelle-note" element={<NewExpense />} />
+            <Route path="/profil" element={<Profile />} />
+          </Route>
+
+          {/* Manager + Comptabilité */}
+          <Route
+            element={
+              <ProtectedRoute roles={['manager', 'accounting']}>
+                <Layout />
+              </ProtectedRoute>
+            }
+          >
+            <Route path="/toutes-les-notes" element={<AllExpenses />} />
+          </Route>
+
+          {/* Manager uniquement */}
+          <Route
+            element={
+              <ProtectedRoute roles={['manager']}>
+                <Layout />
+              </ProtectedRoute>
+            }
+          >
+            <Route path="/comptes" element={<CreateAccount />} />
+          </Route>
+
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
-
   );
- }
+}

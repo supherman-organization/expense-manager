@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ROLE_LABELS } from '../utils/labels';
 import { BRAND_NAME } from '../utils/branding';
 import type { UserRole } from '../types';
 import { 
-  Receipt, PlusCircle, ClipboardList, User, UserPlus, LogOut, Plus, Menu, X, type LucideIcon,
+  Receipt, PlusCircle, ClipboardList, User, UserPlus, LogOut, Menu, X, type LucideIcon,
 } from 'lucide-react';
 
 interface NavItem {
@@ -109,16 +109,6 @@ export default function Layout() {
             <X size={20} />
           </button>
         </div>
-
-        {/* CTA principal */}
-        <Link
-          to="/nouvelle-note"
-          onClick={closeDrawer}
-          className="mb-6 flex items-center justify-center gap-2 rounded-lg bg-secondary px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-600"
-        >
-          <Plus size={18} />
-          Nouvelle note
-        </Link>
 
         {/* Navigation */}
         <nav className="flex-1 space-y-1 overflow-y-auto">

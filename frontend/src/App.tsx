@@ -6,10 +6,8 @@ import Login from './pages/Login';
 import MyExpenses from './pages/MyExpenses';
 import NewExpense from './pages/NewExpense';
 import AllExpenses from './pages/AllExpenses';
-
-function Placeholder({ titre }: { titre: string }) {
-  return <h1 className="text-2xl font-bold text-slate-800">{titre}</h1>;
-}
+import Profile from './pages/Profile';
+import CreateAccount from './pages/CreateAccount';
 
 export default function App() {
   return (
@@ -28,7 +26,7 @@ export default function App() {
           >
             <Route path="/" element={<MyExpenses />} />
             <Route path="/nouvelle-note" element={<NewExpense />} />
-            <Route path="/profil" element={<Placeholder titre="Mon profil" />} />
+            <Route path="/profil" element={<Profile />} />
           </Route>
 
           {/* Manager + Comptabilité */}
@@ -50,7 +48,7 @@ export default function App() {
               </ProtectedRoute>
             }
           >
-            <Route path="/comptes" element={<Placeholder titre="Création de comptes" />} />
+            <Route path="/comptes" element={<CreateAccount />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />

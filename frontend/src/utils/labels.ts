@@ -1,4 +1,4 @@
-import type { ExpenseStatus } from '../types';
+import type { ExpenseStatus, UserRole } from '../types';
 
 export const STATUS_LABELS: Record<ExpenseStatus, string> = {
   created: 'Créée',
@@ -20,4 +20,10 @@ export const CATEGORY_LABELS: Record<string, string> = {
   accommodation: 'Hébergement',
   supplies: 'Fournitures',
   other: 'Autre',
+};
+
+export const ROLE_LABELS: Record<UserRole, string> = {
+  employee: 'Employé',
+  manager: 'Manager',
+  accounting: 'Comptabilité',
 };

@@ -1,130 +1,160 @@
-import {  useState } from 'react';
-import { NavLink , Outlet, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { ROLE_LABELS } from '../utils/labels';
+import { BRAND_NAME } from '../utils/branding';
 import type { UserRole } from '../types';
+import { 
+  Receipt, PlusCircle, ClipboardList, User, UserPlus, LogOut, Menu, X, type LucideIcon,
+} from 'lucide-react';
 
 interface NavItem {
-    to: string;
-    label: string;
-    end?: boolean;
-    roles?: UserRole[];
+  to: string;
+  label: string;
+  icon: LucideIcon;
+  end?: boolean;
+  roles?: UserRole[];
 }
 
-// Libellés pour l'affichage .
 const NAV_ITEMS: NavItem[] = [
-    { to: '/', label: 'Mes notes de frais', end: true },
-    { to: '/nouvelle-note', label: 'Nouvelle note' },
-    {to: '/toutes-les-notes', label: 'Toutes les notes', roles: ['manager', 'accounting'] },
-    {to: '/comptes', label: 'Créer un compte', roles: ['manager'] },
-    {to: '/profil', label: 'Mon profil' },
+  { to: '/', label: 'Mes notes de frais', icon: Receipt, end: true },
+  { to: '/nouvelle-note', label: 'Nouvelle note', icon: PlusCircle },
+  {
+    to: '/toutes-les-notes',
+    label: 'Toutes les notes',
+    icon: ClipboardList,
+    roles: ['manager', 'accounting'],
+  },
+  { to: '/profil', label: 'Mon profil', icon: User },
+  { to: '/comptes', label: 'Créer un compte', icon: UserPlus, roles: ['manager'] },
 ];
 
-const ROLE_LABELS: Record<UserRole, string> = {
-    employee: 'Employé',
-    manager: 'Manager',
-    accounting: 'Comptabilité',
-};
+export default function Layout() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
-export default function Layout(){
-    const { user, logout } = useAuth();
-    const navigate = useNavigate();
-    const [menuOpen, setMenuOpen] = useState(false);
-
-    // Calcul pendant le rendu : la liste visible se dérive du rôle, pas besoin
-    // de state ni d'useEffect pour la « stocker ».
-    const visibleItems = NAV_ITEMS.filter(
-        (item) => !item.roles || (user && item.roles.includes(user.role)),
+  const visibleItems = NAV_ITEMS.filter(
+    (item) => !item.roles || (user && item.roles.includes(user.role)),
   );
-    // Action utilisateur, gestionnaire d'événement.
-    function handleLogout() {
-        logout();
-        navigate('/connexion', { replace: true });
+
+  useEffect(() => {
+    if (!drawerOpen) return;
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') setDrawerOpen(false);
+    }
+    document.addEventListener('keydown', handleKey);
+    return () => document.removeEventListener('keydown', handleKey);
+  }, [drawerOpen]);
+
+  function closeDrawer() {
+    setDrawerOpen(false);
   }
-    const linkClass = ({ isActive }: { isActive: boolean }) =>
-        `block rounded-lg px-3 py-2 text-sm font-medium transition ${
-            isActive ? 'bg-slate-800 text-white' : 'text-slate-600 hover:bg-slate-200'
+
+  function handleLogout() {
+    logout();
+    navigate('/connexion', { replace: true });
+  }
+
+  const linkClass = ({ isActive }: { isActive: boolean }) =>
+    `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition ${
+      isActive ? 'bg-white/10 text-white' : 'text-slate-300 hover:bg-white/5 hover:text-white'
     }`;
 
-    return (
-    <div className="min-h-screen bg-slate-100">
-      <header className="border-b border-slate-200 bg-white">
-        <nav className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-          <span className="text-lg font-bold text-slate-800">Expense Manager</span>
-
-          {/* Liens — visibles en ligne à partir de md */}
-          <div className="hidden items-center gap-1 md:flex">
-            {visibleItems.map((item) => (
-              <NavLink key={item.to} to={item.to} end={item.end} className={linkClass}>
-                {item.label}
-              </NavLink>
-            ))}
-          </div>
-
-          {/* Identité + déconnexion (desktop) */}
-          <div className="hidden items-center gap-3 md:flex">
-            <span className="text-sm text-slate-500">
-              {user?.email} · {user ? ROLE_LABELS[user.role] : ''}
-            </span>
-            <button
-              onClick={handleLogout}
-              className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
-            >
-              Déconnexion
-            </button>
-          </div>
-
-          {/* Bouton hamburger (mobile uniquement) */}
-          <button
-            onClick={() => setMenuOpen((open) => !open)}
-            className="rounded-lg p-2 text-xl leading-none text-slate-700 hover:bg-slate-100 md:hidden"
-            aria-label="Ouvrir le menu"
-            aria-expanded={menuOpen}
-          >
-            {menuOpen ? '✕' : '☰'}
-          </button>
-        </nav>
-
-        {/* Menu déroulant mobile */}
-        {menuOpen && (
-          <div className="border-t border-slate-200 px-4 py-3 md:hidden">
-            <div className="flex flex-col gap-1">
-              {visibleItems.map((item) => (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  end={item.end}
-                  onClick={() => setMenuOpen(false)}
-                  className={linkClass}
-                >
-                  {item.label}
-                </NavLink>
-              ))}
-            </div>
-            <div className="mt-3 border-t border-slate-200 pt-3">
-              <p className="mb-2 text-sm text-slate-500">
-                {user?.email} · {user ? ROLE_LABELS[user.role] : ''}
-              </p>
-              <button
-                onClick={handleLogout}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
-              >
-                Déconnexion
-              </button>
-            </div>
-          </div>
-        )}
+  return (
+    <div className="min-h-screen">
+      {/* Barre supérieure mobile : déclencheur du menu */}
+      <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-slate-200 bg-white px-4 md:hidden">
+        <button
+          onClick={() => setDrawerOpen(true)}
+          aria-label="Ouvrir le menu"
+          className="rounded-lg p-2 text-slate-700 transition hover:bg-slate-100"
+        >
+          <Menu size={22} />
+        </button>
+        <div className="flex items-center gap-2">
+          <img src="/logo.png" alt="" className="h-7 w-7 rounded-md" />
+          <span className="font-display text-base font-bold text-primary">{BRAND_NAME}</span>
+        </div>
       </header>
 
-      {/* La page active vient se loger ici */}
-      <main className="mx-auto max-w-5xl px-4 py-8">
-        <Outlet />
-      </main>
+      {/* Fond semi-transparent derrière le drawer (mobile uniquement) */}
+      {drawerOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 md:hidden"
+          onClick={closeDrawer}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Sidebar : fixe sur desktop, drawer coulissant sur mobile */}
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 flex w-64 transform flex-col bg-primary px-4 py-6 transition-transform duration-200 md:translate-x-0 ${
+          drawerOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        {/* En-tête marque + bouton fermer  */}
+        <div className="mb-6 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <img src="/logo.png" alt="" className="h-14 w-14 rounded-xl" />
+            <p className="font-display text-xl font-extrabold leading-tight text-white">
+              {BRAND_NAME}
+            </p>
+          </div>
+          <button
+            onClick={closeDrawer}
+            aria-label="Fermer le menu"
+            className="rounded-lg p-1.5 text-slate-400 transition hover:bg-white/5 hover:text-white md:hidden"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 space-y-1 overflow-y-auto">
+          {visibleItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.end}
+                onClick={closeDrawer}
+                className={linkClass}
+              >
+                {({ isActive }) => (
+                  <>
+                    <Icon size={18} className={isActive ? 'text-secondary' : ''} />
+                    <span>{item.label}</span>
+                  </>
+                )}
+              </NavLink>
+            );
+          })}
+        </nav>
+
+        {/* Identité + déconnexion */}
+        <div className="mt-4 border-t border-white/10 pt-4">
+          <div className="mb-3 px-2">
+            <p className="truncate text-sm font-medium text-white">{user?.email}</p>
+            <p className="text-xs text-slate-400">{user ? ROLE_LABELS[user.role] : ''}</p>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 transition hover:bg-white/5 hover:text-white"
+          >
+            <LogOut size={18} />
+            Déconnexion
+          </button>
+        </div>
+      </aside>
+
+      {/* Contenu principal */}
+      <div className="md:pl-64">
+        <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
-
-
-
 }
-
-
-

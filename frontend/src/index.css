@@ -1,1 +1,28 @@
 @import "tailwindcss";
+
+
+@theme {
+  /* Couleurs de la charte */
+  --color-primary: #0f172a; /* slate-900  : sidebar, titres, CTA sombres */
+  --color-secondary: #3b82f6; /* blue-500   : accent, liens, CTA bleus     */
+  --color-surface: #f8fafc; /* slate-50   : fond de page, surfaces claires */
+  --color-muted: #64748b; /* slate-500  : texte secondaire, labels       */
+
+  /* Polices : Inter par défaut, Manrope pour les titres (font-display) */
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Manrope", ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Styles de base appliqués à toute l'appli */
+@layer base {
+  body {
+    @apply bg-surface font-sans text-slate-800 antialiased;
+  }
+
+  /* Les titres utilisent Manrope par défaut */
+  h1,
+  h2,
+  h3 {
+    @apply font-display;
+  }
+}

@@ -41,7 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  // ⚡ Actions déclenchées par l'utilisateur : de simples fonctions,
+  // Actions déclenchées par l'utilisateur : de simples fonctions,
   // appelées depuis les gestionnaires d'événements — PAS des Effects.
   async function login(email: string, password: string): Promise<LoginResult> {
     const res = await api.post('/auth/login', { email, password });

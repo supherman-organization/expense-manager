@@ -1,15 +1,15 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import type { AxiosError } from 'axios';
+import { UserPlus, CheckCircle2 } from 'lucide-react';
 import api from '../services/api';
 import Field from '../components/Field';
+import Card from '../components/Card';
+import PageHeader from '../components/PageHeader';
+import Button from '../components/Button';
+import { inputClasses } from '../utils/styles';
+import { ROLE_LABELS } from '../utils/labels';
 import type { UserRole } from '../types';
-
-const ROLES: { value: UserRole; label: string }[] = [
-  { value: 'employee', label: 'Employé' },
-  { value: 'manager', label: 'Manager' },
-  { value: 'accounting', label: 'Comptabilité' },
-];
 
 export default function CreateAccount() {
   const [email, setEmail] = useState('');
@@ -27,7 +27,6 @@ export default function CreateAccount() {
     setRole('employee');
   }
 
-  // Action utilisateur, gestionnaire d'événement.
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
@@ -49,7 +48,7 @@ export default function CreateAccount() {
       setSuccess(
         `Compte créé pour ${email.trim()}. Un email d'invitation a été envoyé pour choisir le mot de passe.`,
       );
-      resetForm(); // prêt pour la création suivante
+      resetForm();
     } catch (err) {
       const axiosErr = err as AxiosError<{ message?: string }>;
       setError(axiosErr.response?.data?.message ?? 'La création du compte a échoué.');
@@ -58,84 +57,91 @@ export default function CreateAccount() {
     }
   }
 
-  const inputClass =
-    'mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500';
-
   return (
-    <div className="mx-auto max-w-2xl">
-      <h1 className="mb-2 text-2xl font-bold text-slate-800">Créer un compte</h1>
-      <p className="mb-6 text-sm text-slate-500">
-        Le nouvel utilisateur recevra un email pour définir son mot de passe lors de sa première
-        connexion.
-      </p>
+    <div>
+      <PageHeader
+        title="Gestion des utilisateurs"
+        subtitle="Ajoutez de nouveaux membres à l'organisation et attribuez-leur un rôle."
+      />
 
-      {error && (
-        <div className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
-      )}
-      {success && (
-        <div className="mb-4 rounded-lg bg-green-50 px-4 py-3 text-sm text-green-700">
-          {success}
-        </div>
-      )}
+      <div className="mx-auto max-w-2xl">
+        <Card>
+          <h2 className="flex items-center gap-2 font-display text-base font-semibold text-primary">
+            <UserPlus size={18} className="text-secondary" />
+            Créer un compte
+          </h2>
+          <p className="mt-1 text-sm text-muted">
+            Le nouvel utilisateur recevra un email pour définir son mot de passe lors de sa première
+            connexion.
+          </p>
 
-      <form onSubmit={handleSubmit} className="space-y-5 rounded-2xl bg-white p-6 shadow-sm">
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-          <Field label="Prénom" htmlFor="firstName">
-            <input
-              id="firstName"
-              type="text"
-              required
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              className={inputClass}
-            />
-          </Field>
-          <Field label="Nom" htmlFor="lastName">
-            <input
-              id="lastName"
-              type="text"
-              required
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              className={inputClass}
-            />
-          </Field>
-        </div>
+          {error && (
+            <div className="mt-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+          )}
+          {success && (
+            <div className="mt-4 flex items-start gap-2 rounded-lg bg-green-50 px-4 py-3 text-sm text-green-700">
+              <CheckCircle2 size={18} className="mt-0.5 shrink-0" />
+              <span>{success}</span>
+            </div>
+          )}
 
-        <Field label="Email" htmlFor="email">
-          <input
-            id="email"
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className={inputClass}
-          />
-        </Field>
+          <form onSubmit={handleSubmit} className="mt-5 space-y-5">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+              <Field label="Prénom" htmlFor="firstName">
+                <input
+                  id="firstName"
+                  type="text"
+                  required
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  className={inputClasses}
+                />
+              </Field>
+              <Field label="Nom" htmlFor="lastName">
+                <input
+                  id="lastName"
+                  type="text"
+                  required
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  className={inputClasses}
+                />
+              </Field>
+            </div>
 
-        <Field label="Rôle" htmlFor="role">
-          <select
-            id="role"
-            value={role}
-            onChange={(e) => setRole(e.target.value as UserRole)}
-            className={inputClass}
-          >
-            {ROLES.map((r) => (
-              <option key={r.value} value={r.value}>
-                {r.label}
-              </option>
-            ))}
-          </select>
-        </Field>
+            <Field label="Adresse email" htmlFor="email">
+              <input
+                id="email"
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="collaborateur@entreprise.com"
+                className={inputClasses}
+              />
+            </Field>
 
-        <button
-          type="submit"
-          disabled={submitting}
-          className="rounded-lg bg-slate-800 px-5 py-2 font-medium text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {submitting ? 'Création…' : 'Créer le compte'}
-        </button>
-      </form>
+            <Field label="Rôle assigné" htmlFor="role">
+              <select
+                id="role"
+                value={role}
+                onChange={(e) => setRole(e.target.value as UserRole)}
+                className={inputClasses}
+              >
+                {(Object.keys(ROLE_LABELS) as UserRole[]).map((r) => (
+                  <option key={r} value={r}>
+                    {ROLE_LABELS[r]}
+                  </option>
+                ))}
+              </select>
+            </Field>
+
+            <Button type="submit" variant="primary" icon={UserPlus} disabled={submitting}>
+              {submitting ? 'Création…' : 'Créer le compte'}
+            </Button>
+          </form>
+        </Card>
+      </div>
     </div>
   );
 }

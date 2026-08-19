@@ -42,6 +42,15 @@ services:
     volumes:
       - uploads-data:/app/uploads
 
+  frontend:
+    build: ./frontend
+    container_name: expense-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+
 volumes:
   mongo-data:
   uploads-data:

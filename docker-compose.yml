@@ -42,6 +42,18 @@ services:
     volumes:
       - uploads-data:/app/uploads
 
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        - VITE_API_BASE_URL=/api
+    container_name: expense-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+
 volumes:
   mongo-data:
   uploads-data:

@@ -17,7 +17,8 @@ export default function CreateAccount() {
   const [lastName, setLastName] = useState('');
   const [role, setRole] = useState<UserRole>('employee');
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  // On stocke l'email + le mot de passe temporaire renvoyés après création.
+  const [created, setCreated] = useState<{ email: string; password: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   function resetForm() {
@@ -30,7 +31,7 @@ export default function CreateAccount() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
-    setSuccess(null);
+    setCreated(null);
 
     if (!email.trim() || !firstName.trim() || !lastName.trim()) {
       setError('Tous les champs sont requis.');
@@ -39,15 +40,14 @@ export default function CreateAccount() {
 
     setSubmitting(true);
     try {
-      await api.post('/users', {
+      const res = await api.post('/users', {
         email: email.trim(),
         firstName: firstName.trim(),
         lastName: lastName.trim(),
         role,
       });
-      setSuccess(
-        `Compte créé pour ${email.trim()}. Un email d'invitation a été envoyé pour choisir le mot de passe.`,
-      );
+      // Le backend renvoie le mot de passe temporaire EN CLAIR, une seule fois.
+      setCreated({ email: email.trim(), password: res.data.temporaryPassword });
       resetForm();
     } catch (err) {
       const axiosErr = err as AxiosError<{ message?: string }>;
@@ -71,17 +71,30 @@ export default function CreateAccount() {
             Créer un compte
           </h2>
           <p className="mt-1 text-sm text-muted">
-            Le nouvel utilisateur recevra un email pour définir son mot de passe lors de sa première
-            connexion.
+            Un mot de passe temporaire sera généré : communiquez-le au nouvel utilisateur, qui
+            devra le changer lors de sa première connexion.
           </p>
 
           {error && (
             <div className="mt-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
           )}
-          {success && (
-            <div className="mt-4 flex items-start gap-2 rounded-lg bg-green-50 px-4 py-3 text-sm text-green-700">
-              <CheckCircle2 size={18} className="mt-0.5 shrink-0" />
-              <span>{success}</span>
+
+          {created && (
+            <div className="mt-4 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
+              <div className="flex items-center gap-2 font-semibold">
+                <CheckCircle2 size={18} className="shrink-0" />
+                Compte créé pour {created.email}
+              </div>
+              <p className="mt-2">
+                Communiquez ces identifiants au nouvel utilisateur. Ce mot de passe temporaire
+                <strong> ne sera plus affiché après avoir quitté cette page.</strong>
+              </p>
+              <div className="mt-2 rounded-md bg-white px-3 py-2 font-mono text-sm text-slate-800">
+                {created.password}
+              </div>
+              <p className="mt-2 text-xs text-green-700">
+                Il devra le changer lors de sa première connexion.
+              </p>
             </div>
           )}
 

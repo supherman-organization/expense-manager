@@ -5,7 +5,7 @@ import { ROLE_LABELS } from '../utils/labels';
 import { BRAND_NAME } from '../utils/branding';
 import type { UserRole } from '../types';
 import { 
-  Receipt, PlusCircle, ClipboardList, User, UserPlus, LogOut, Menu, X, type LucideIcon,
+  Receipt, PlusCircle, ClipboardList, User, UserPlus, Menu, X, type LucideIcon,
 } from 'lucide-react';
 
 interface NavItem {
@@ -143,7 +143,6 @@ export default function Layout() {
             onClick={handleLogout}
             className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 transition hover:bg-white/5 hover:text-white"
           >
-            <LogOut size={18} />
             Déconnexion
           </button>
         </div>

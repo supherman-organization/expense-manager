@@ -13,14 +13,6 @@ services:
       timeout: 5s
       retries: 5
 
-  mailpit:
-    image: axllent/mailpit:latest
-    container_name: expense-mailpait
-    restart: unless-stopped
-    ports:
-    - "8025:8025"
-    - "1025:1025"
-
   backend:
     build: ./backend
     container_name: expense-backend
@@ -28,17 +20,12 @@ services:
     depends_on:
       mongo:
         condition: service_healthy
-      mailpit:
-        condition: service_started
     ports:
       - "4000:4000"
     environment:
       - PORT=4000
       - MONGO_URI=mongodb://mongo:27017/expense_manager
       - JWT_SECRET=${JWT_SECRET}
-      - SMTP_HOST=mailpit
-      - SMTP_PORT=1025
-      - MAIL_FROM=norpely@supherman.com 
     volumes:
       - uploads-data:/app/uploads
 

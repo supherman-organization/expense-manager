@@ -2,7 +2,6 @@ import { Request, Response, NextFunction } from 'express';
 import { Types } from 'mongoose';
 import { ExpenseNote, ExpenseStatus } from '../models/ExpenseNote';
 import { AppError } from '../middlewares/error';
-import { notifyStatusChange } from '../utils/notifications';
 
 // Création d'une note
 export async function createExpense(req: Request, res: Response, next: NextFunction) {
@@ -107,9 +106,7 @@ export async function validateExpense(req: Request, res: Response, next: NextFun
     const note = await changeStatus(String(req.params.id), { from: 'created', to: 'validated' },
     req.body.decisionComment,
   );
-  const owner = note.owner as unknown as { email: string; firstName: string };
-    await notifyStatusChange(owner.email, owner.firstName, note.title, note.status, note.decisionComment);
-    return res.json(note);
+  return res.json(note);
   } catch (error) {
     next(error);
   }
@@ -121,8 +118,6 @@ export async function refuseExpense(req: Request, res: Response, next: NextFunct
     const note = await changeStatus(String(req.params.id), { from: 'created', to: 'refused' }, 
     req.body.decisionComment,
   );
-  const owner = note.owner as unknown as { email: string; firstName: string };
-  await notifyStatusChange(owner.email, owner.firstName, note.title, note.status, note.decisionComment);
   return res.json(note);
   } catch (error) {
     next(error);
@@ -133,8 +128,6 @@ export async function refuseExpense(req: Request, res: Response, next: NextFunct
 export async function processExpense(req: Request, res: Response, next: NextFunction) {
   try {
     const note = await changeStatus(String(req.params.id), { from: 'validated', to: 'processed' });
-    const owner = note.owner as unknown as { email: string; firstName: string };
-    await notifyStatusChange(owner.email, owner.firstName, note.title, note.status);
     return res.json(note);
   } catch (error) {
     next(error);
